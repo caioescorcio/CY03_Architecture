@@ -1,0 +1,49 @@
+@startuml 01-positionnement
+!pragma layout smetana
+title Positionnement de BilletLive dans son écosystème (§1.5)
+left to right direction
+skinparam defaultFontName Liberation Sans
+skinparam rectangle {
+  BackgroundColor #f9f9f9
+  BorderColor #333333
+  BackgroundColor<<bl>> #dbeafe
+  BorderColor<<bl>> #1e40af
+  BackgroundColor<<evolution>> #fff3cd
+  BorderColor<<evolution>> #ffc107
+  BorderStyle<<evolution>> dashed
+}
+hide stereotype
+
+rectangle "BilletLive - Nantes" as BL {
+  rectangle "Shop\nvente en marque blanche" as Shop <<bl>>
+  rectangle "Studio\nback-office organisateur" as Studio <<bl>>
+  rectangle "Access\ncontrôle d'accès" as Access <<bl>>
+  rectangle "Pay\nencaissement & reversement" as Pay <<bl>>
+  rectangle "Resale\nrevente encadrée" as Resale <<evolution>>
+}
+
+rectangle "Organisateurs\nsalles, festivals, clubs, théâtres, musées" as Orga
+rectangle "Grands stades\n60 000 places" as Stades <<evolution>>
+rectangle "Spectateurs\nFR, puis BE / ES / PT" as Spect
+rectangle "Agents de contrôle\nbénévoles, personnel" as Agents
+rectangle "Prestataire de paiement agréé" as PSP
+rectangle "Banques des organisateurs" as Banques
+rectangle "Lieux d'événement\nparfois sans réseau" as Sites
+rectangle "Autorités de protection des données\nCNIL et homologues" as CNIL
+
+Orga --> BL : contrat, commission 4 %
+Stades --> BL : nouveau segment
+BL --> Spect : billets aux couleurs\nde l'organisateur
+Spect --> Shop : achat, revente
+Spect ..> Resale : revente entre particuliers
+Agents --> Access : contrôlent les entrées
+Access -- Sites
+Pay --> PSP : encaissement,\nconformité paiement
+PSP --> Banques : reversement des fonds
+BL ..> CNIL : AIPD, biométrie
+
+legend right
+  |<back:#dbeafe>   </back>| Existant |
+  |<back:#fff3cd>   </back>| Nouveau / évolution |
+endlegend
+@enduml

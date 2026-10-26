@@ -1,0 +1,94 @@
+@startuml 02-fonctions-metier
+!pragma layout smetana
+title Cartographie des fonctions métier de BilletLive (§2.1)
+top to bottom direction
+skinparam defaultFontName Liberation Sans
+skinparam rectangle {
+  BackgroundColor #f9f9f9
+  BorderColor #333333
+  BackgroundColor<<evolution>> #fff3cd
+  BorderColor<<evolution>> #ffc107
+  BorderStyle<<evolution>> dashed
+  BackgroundColor<<support>> #eeeeee
+  BorderColor<<support>> #999999
+  FontColor<<support>> #555555
+}
+hide stereotype
+
+package "Relation organisateurs" {
+  rectangle "Recrutement & Onboarding Organisateur" as F11
+}
+
+package "BilletLive Studio - Back-office Organisateur" {
+  rectangle "Configuration Événement & Plan de Salle" as F1
+  rectangle "Gestion des Quotas, Tarifs & Filières" as F2
+  rectangle "Planification des Mises en Vente" as F12
+  rectangle "Paramétrage des Règles de Revente" as F13 <<evolution>>
+  rectangle "Suivi Temps Réel des Ventes & Entrées" as F3 <<evolution>>
+}
+
+package "BilletLive Shop - Vente B2B2C" {
+  rectangle "Gestion de la File d'Attente" as F4
+  rectangle "Sélection & Réservation de Place" as F5
+  rectangle "Commande & Paiement" as F14
+  rectangle "Émission du Titre d'Accès" as F6
+  rectangle "Enrôlement Biométrique & Gestion du Consentement" as F7 <<evolution>>
+}
+
+package "BilletLive Resale - Revente encadrée" {
+  rectangle "Remise en Vente d'un Billet" as F15 <<evolution>>
+  rectangle "Revente & Réémission Nominative" as F16 <<evolution>>
+}
+
+package "BilletLive Pay - Flux financiers" {
+  rectangle "Encaissement" as F17
+  rectangle "Reversement & Rapprochement" as F18 <<evolution>>
+}
+
+package "BilletLive Access - Contrôle d'accès" {
+  rectangle "Validation par Scan Code-barres" as F8
+  rectangle "Validation par Reconnaissance Faciale" as F9 <<evolution>>
+  rectangle "Synchronisation & Réconciliation" as F10
+}
+
+rectangle "Fonctions support\nassistance client, comptabilité, RH" as FS <<support>>
+
+' Préparation
+F11 --> F1
+F1 --> F2
+F2 --> F12
+F12 --> F4 : Ouvre la vente
+F2 ..> F5 : Alimente les disponibilités
+F13 ..> F15 : Prix plafond, nb de reventes
+
+' Vente
+F4 --> F5
+F5 --> F14
+F14 --> F17 : Paiement
+F14 --> F6
+F6 ..> F8 : Génère les droits d'accès
+F6 --> F7
+F7 ..> F9 : Gabarit facial (si consentement)
+
+' Revente
+F6 --> F15 : Billet remis en vente
+F15 --> F16
+F16 --> F17 : Paiement acheteur
+F16 --> F6 : Invalide l'ancien titre,\német le nouveau
+
+' Jour J
+F8 --> F10
+F9 --> F10
+F10 ..> F3 : Entrées
+F14 ..> F3 : Ventes
+
+' Finance
+F17 --> F18
+F18 ..> F11 : État de reversement
+
+legend right
+  |<back:#f9f9f9>   </back>| Fonction existante |
+  |<back:#fff3cd>   </back>| Fonction nouvelle / transformée |
+  |<back:#eeeeee>   </back>| Fonction support non détaillée |
+endlegend
+@enduml
