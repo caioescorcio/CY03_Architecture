@@ -4,90 +4,7 @@
 
 La cartographie ci-dessous représente l'enchaînement des fonctions métier de BilletLive, regroupées par offre : Studio, Shop, Resale, Pay et Access. Les fonctions en jaune sont nouvelles ou transformées par l'évolution.
 
-```mermaid
-graph TD
-    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef evolution fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5;
-    classDef support fill:#eeeeee,stroke:#999,stroke-width:1px,color:#555;
-
-    subgraph Relation [Relation organisateurs]
-        F11[Recrutement & Onboarding Organisateur]
-    end
-
-    subgraph Studio [BilletLive Studio - Back-office Organisateur]
-        F1[Configuration Événement & Plan de Salle]
-        F2[Gestion des Quotas, Tarifs & Filières]
-        F12[Planification des Mises en Vente]
-        F13[Paramétrage des Règles de Revente]:::evolution
-        F3[Suivi Temps Réel des Ventes & Entrées]:::evolution
-    end
-
-    subgraph Shop [BilletLive Shop - Vente B2B2C]
-        F4[Gestion de la File d'Attente]
-        F5[Sélection & Réservation de Place]
-        F14[Commande & Paiement]
-        F6[Émission du Titre d'Accès]
-        F7[Enrôlement Biométrique & Gestion du Consentement]:::evolution
-    end
-
-    subgraph Resale [BilletLive Resale - Revente encadrée]
-        F15[Remise en Vente d'un Billet]:::evolution
-        F16[Revente & Réémission Nominative]:::evolution
-    end
-
-    subgraph Pay [BilletLive Pay - Flux financiers]
-        F17[Encaissement]
-        F18[Reversement & Rapprochement]:::evolution
-    end
-
-    subgraph Access [BilletLive Access - Contrôle d'accès]
-        F8[Validation par Scan Code-barres]
-        F9[Validation par Reconnaissance Faciale]:::evolution
-        F10[Synchronisation & Réconciliation]
-    end
-
-    FS[Fonctions support<br/>assistance client, comptabilité, RH]:::support
-
-    %% Préparation
-    F11 --> F1
-    F1 --> F2
-    F2 --> F12
-    F12 -->|"Ouvre la vente"| F4
-    F2 -.->|"Alimente les disponibilités"| F5
-    F13 -.->|"Prix plafond, nb de reventes"| F15
-
-    %% Vente
-    F4 --> F5
-    F5 --> F14
-    F14 -->|"Paiement"| F17
-    F14 --> F6
-    F6 -.->|"Génère les droits d'accès"| F8
-    F6 --> F7
-    F7 -.->|"Gabarit facial (si consentement)"| F9
-
-    %% Revente
-    F6 -->|"Billet remis en vente"| F15
-    F15 --> F16
-    F16 -->|"Paiement acheteur"| F17
-    F16 -->|"Invalide l'ancien titre, émet le nouveau"| F6
-
-    %% Jour J
-    F8 --> F10
-    F9 --> F10
-    F10 -.->|"Entrées"| F3
-    F14 -.->|"Ventes"| F3
-
-    %% Finance
-    F17 --> F18
-    F18 -.->|"État de reversement"| F11
-
-    %% Légende
-    subgraph Légende
-        L1[Fonction existante]
-        L2[Fonction nouvelle / transformée]:::evolution
-        L3[Fonction support non détaillée]:::support
-    end
-```
+![Fonctions Métier](./diagrammes/02-fonctions-metier.svg)
 
 Description des fonctions métier :
 
@@ -131,30 +48,7 @@ Description des fonctions métier :
 
 C'est le processus où se rencontrent l'exigence de pic de charge (ENF-1) et l'exigence d'unicité (EF-1). Il est représenté avec son cas d'échec.
 
-```mermaid
-flowchart LR
-    subgraph Spectateur
-        A1([Arrive à l'ouverture]) --> A2[Reçoit sa position<br/>dans la file]
-        A3[Choisit sa place] --> A4[Paie]
-        A6([Reçoit son billet])
-    end
-    subgraph BilletLive
-        B1[Place l'acheteur dans la file<br/>ordre d'arrivée] --> B2{Son tour ?}
-        B2 -- non --> A2
-        B2 -- oui --> A3
-        A3 --> B3[Bloque la place<br/>pour une durée limitée]
-        B3 --> A4
-        B4{Paiement confirmé<br/>dans le délai ?}
-        B4 -- oui --> B5[Vend la place<br/>émet le titre]
-        B4 -- "non : refus ou délai expiré" --> B6[Libère la place<br/>retour au stock]
-        B5 --> A6
-    end
-    subgraph PSP [Prestataire de paiement]
-        P1[Authentification forte<br/>et autorisation]
-    end
-    A1 --> B1
-    A4 --> P1 --> B4
-```
+![Mise en vente](./diagrammes/02-processus-mise-en-vente.svg)
 
 ## 2.2 Acteurs du SI
 

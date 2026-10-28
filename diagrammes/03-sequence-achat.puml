@@ -1,0 +1,47 @@
+@startuml 03-sequence-achat
+title Achat lors d'une mise en vente critique, avec cas d'erreur (§3.3)
+skinparam defaultFontName Liberation Sans
+autonumber
+
+actor Spectateur
+participant "File d'attente\n(SaaS)" as Q
+participant "Shop Web" as W
+participant "API Vente" as V
+participant "Inventaire" as I
+participant "Pay" as P
+participant "Prestataire\nde paiement" as PSP
+queue "Bus d'événements" as B
+participant "Billets" as T
+
+Spectateur -> Q : Arrive à l'ouverture
+Q --> Spectateur : Position dans la file
+Q -> W : Son tour : redirection + jeton signé
+W -> V : POST /api/v1/events/{id}/holds\n(jeton, place A12)
+V -> I : Réserver A12 (écriture conditionnelle : LIBRE → BLOQUÉE, 10 min)
+
+alt Place déjà prise
+  I --> V : 409 Conflict
+  V --> W : Place indisponible, choisir une autre
+else Place bloquée
+  I --> V : 201 Hold créé
+  V -> P : POST /api/v1/payments\n(commande, Idempotency-Key)
+  P -> PSP : Créer paiement (REST)
+  PSP --> Spectateur : Authentification forte (3-D Secure)
+
+  alt Paiement accepté
+    PSP -> P : Webhook paiement.accepte
+    P -> V : Paiement confirmé
+    V -> I : Vendre A12 (BLOQUÉE → VENDUE)
+    V -> B : Publie commande.payee
+    B -> T : commande.payee
+    T -> T : Émet et signe le billet
+    T -> B : Publie billet.emis
+    T --> Spectateur : Billet (e-mail + compte)
+  else Refus ou pas de réponse en 10 min
+    PSP -[#red]> P : Webhook paiement.refuse\n(ou timeout)
+    P -[#red]> V : Paiement échoué
+    I -[#red]> I : Fin du blocage : A12 redevient LIBRE
+    V --[#red]> W : Paiement échoué, place libérée
+  end
+end
+@enduml

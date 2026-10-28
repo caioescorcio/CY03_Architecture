@@ -121,42 +121,4 @@ La reconnaissance faciale soulève des questions que l'entreprise n'a pas encore
 
 ## 1.5 Schéma de positionnement
 
-```mermaid
-graph LR
-    classDef bl fill:#dbeafe,stroke:#1e40af,stroke-width:2px;
-    classDef ext fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef evolution fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5;
-
-    subgraph BL [BilletLive - Nantes]
-        Shop[Shop<br/>vente en marque blanche]:::bl
-        Studio[Studio<br/>back-office organisateur]:::bl
-        Access[Access<br/>contrôle d'accès]:::bl
-        Pay[Pay<br/>encaissement & reversement]:::bl
-        Resale[Resale<br/>revente encadrée]:::evolution
-    end
-
-    Orga[Organisateurs<br/>salles, festivals, clubs, théâtres, musées]:::ext
-    Stades[Grands stades<br/>60 000 places]:::evolution
-    Spect[Spectateurs<br/>FR, puis BE / ES / PT]:::ext
-    Agents[Agents de contrôle<br/>bénévoles, personnel]:::ext
-    PSP[Prestataire de paiement agréé]:::ext
-    Banques[Banques des organisateurs]:::ext
-    Sites[Lieux d'événement<br/>parfois sans réseau]:::ext
-    CNIL[Autorités de protection des données<br/>CNIL et homologues]:::ext
-
-    Orga -- "contrat, commission 4 %" --> BL
-    Stades -- "nouveau segment" --> BL
-    BL -- "billets aux couleurs de l'organisateur" --> Spect
-    Spect -- "achat, revente" --> Shop
-    Spect -. "revente entre particuliers" .-> Resale
-    Agents -- "contrôlent les entrées" --> Access
-    Access --- Sites
-    Pay -- "encaissement, conformité paiement" --> PSP
-    PSP -- "reversement des fonds" --> Banques
-    BL -. "AIPD, biométrie" .-> CNIL
-
-    subgraph Légende
-        L1[Existant]:::bl
-        L2[Nouveau / évolution]:::evolution
-    end
-```
+![Positionnement](./diagrammes/01-positionnement.svg)

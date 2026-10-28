@@ -1,0 +1,63 @@
+@startuml 03-conteneurs
+!pragma layout smetana
+!include <C4/C4_Container>
+title Cartographie applicative BilletLive (C4 niveau 2 - §3.1)
+LAYOUT_WITH_LEGEND()
+
+AddElementTag("evolution", $bgColor="#fff3cd", $fontColor="#333333", $borderColor="#ffc107")
+AddRelTag("async", $lineStyle=DashedLine())
+
+Person_Ext(spect, "Spectateur")
+Person_Ext(orga, "Organisateur")
+Person_Ext(agent, "Agent de contrôle")
+
+System_Ext(queue, "File d'attente virtuelle", "SaaS")
+System_Ext(psp, "Prestataire de paiement", "SaaS agréé")
+System_Ext(tourniquets, "Tourniquets du stade", "Exploitant", $tags="evolution")
+
+System_Boundary(bl, "Plateforme BilletLive") {
+  Container(shopweb, "Shop Web", "React, CDN", "Boutique en marque blanche")
+  Container(studio, "Studio", "React + API TypeScript", "Back-office organisateur, tableaux de bord")
+  Container(vente, "API Vente", "TypeScript", "Catalogue, panier, commande")
+  Container(inventaire, "Inventaire", "TypeScript", "Stock de places, réservation atomique")
+  ContainerDb(invdb, "Base Inventaire", "Clé-valeur managée", "État de chaque place")
+  Container(billets, "Billets", "TypeScript", "Émet, signe et invalide les titres")
+  Container(resale, "Resale", "TypeScript", "Annonces et revente encadrée", $tags="evolution")
+  Container(pay, "Pay", "TypeScript", "Paiements, registre financier, reversements")
+  ContainerDb(paydb, "Registre financier", "PostgreSQL managé", "Écritures en ajout seul")
+  ContainerQueue(bus, "Bus d'événements", "Broker managé", "Événements métier")
+  Container(stats, "Statistiques temps réel", "Streaming managé", "Vues de lecture pour Studio", $tags="evolution")
+  Container(sync, "Access Sync", "TypeScript", "Listes de titres, collecte des scans")
+  Container(app, "Access Mobile", "React Native", "Scan hors ligne (smartphone, douchette)")
+  Container(hub, "Hub de site", "Conteneur sur boîtier local", "Synchronise les terminaux d'un site sans Internet")
+  Container(bio, "Biométrie", "Moteur du marché", "Enrôlement, reconnaissance faciale", $tags="evolution")
+}
+
+Rel(spect, queue, "Attend", "HTTPS")
+Rel(queue, shopweb, "Jeton de passage", "HTTPS")
+Rel(spect, shopweb, "Achète, revend", "HTTPS")
+Rel(shopweb, vente, "Commande", "REST")
+Rel(shopweb, resale, "Revend", "REST")
+Rel(vente, inventaire, "Réserve une place", "REST")
+Rel(inventaire, invdb, "Écriture conditionnelle")
+Rel(vente, pay, "Paie", "REST")
+Rel(pay, psp, "Paiement, reversement", "REST")
+Rel(psp, pay, "Confirmations", "Webhook")
+Rel(pay, paydb, "Écrit", "SQL")
+Rel(resale, billets, "Invalide + réémet", "REST")
+Rel(vente, bus, "commande.payee", "Événement", $tags="async")
+Rel(bus, billets, "commande.payee", "Événement", $tags="async")
+Rel(billets, bus, "billet.emis / billet.invalide", "Événement", $tags="async")
+Rel(bus, sync, "billet.*", "Événement", $tags="async")
+Rel(bus, stats, "ventes, scans", "Événement", $tags="async")
+Rel(orga, studio, "Configure, suit", "HTTPS")
+Rel(studio, inventaire, "Publie plan et quotas", "REST")
+Rel(studio, stats, "Lit", "REST")
+Rel(agent, app, "Scanne")
+Rel(app, hub, "Scans", "Wi-Fi local")
+Rel(hub, sync, "Listes / scans", "HTTPS quand réseau")
+Rel(app, sync, "Listes / scans", "HTTPS quand réseau")
+Rel(hub, bio, "Visage à comparer", "Local")
+Rel(hub, tourniquets, "Ouvre", "API locale")
+
+@enduml

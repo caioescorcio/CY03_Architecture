@@ -1,0 +1,37 @@
+@startuml 03-contexte-systeme
+!pragma layout smetana
+!include <C4/C4_Context>
+title Contexte système BilletLive (C4 niveau 1 - §3.1)
+LAYOUT_WITH_LEGEND()
+
+AddElementTag("evolution", $bgColor="#fff3cd", $fontColor="#333333", $borderColor="#ffc107")
+AddRelTag("evolution", $lineColor="#d4a106", $textColor="#8a6d00")
+
+Person_Ext(spect, "Spectateur", "Achète, revend, présente son billet")
+Person_Ext(orga, "Organisateur", "Configure ses événements, suit ventes et reversements")
+Person_Ext(agent, "Agent de contrôle", "Contrôle les entrées sur le site")
+Person(interne, "Équipes BilletLive", "Support, commerciaux, équipe produit")
+
+System(bl, "Plateforme BilletLive", "Vente, revente, contrôle d'accès, encaissement et reversement pour 1 400 organisateurs")
+
+System_Ext(queue, "File d'attente virtuelle", "SaaS : ordonne les acheteurs lors des mises en vente")
+System_Ext(psp, "Prestataire de paiement agréé", "Encaisse, détient les fonds, reverse aux organisateurs")
+System_Ext(banques, "Banques des organisateurs", "Reçoivent les reversements")
+System_Ext(notif, "Service e-mail / SMS", "Envoi des billets et notifications")
+System_Ext(tourniquets, "Tourniquets du stade", "Équipements de l'exploitant de stade", $tags="evolution")
+System_Ext(outils, "Outils support SaaS", "CRM, comptabilité, support client")
+
+Rel(spect, queue, "Attend son tour", "HTTPS")
+Rel(spect, bl, "Achète, revend, s'enrôle", "HTTPS")
+Rel(orga, bl, "Configure, consulte", "HTTPS")
+Rel(agent, bl, "Scanne les billets", "App mobile")
+Rel(interne, bl, "Assiste, exploite", "HTTPS")
+Rel(queue, bl, "Laisse passer les acheteurs", "Jeton signé")
+Rel(bl, psp, "Demande les paiements et reversements", "API REST")
+Rel(psp, bl, "Confirme paiements et mouvements", "Webhooks")
+Rel(psp, banques, "Vire les fonds", "Virement SEPA")
+Rel(bl, notif, "Envoie billets", "API REST")
+Rel(bl, tourniquets, "Ouvre le passage", "API locale", $tags="evolution")
+Rel(bl, outils, "Exporte écritures, tickets", "API / fichiers")
+
+@enduml
